@@ -2,3 +2,11 @@
 * dataloader  --  Yinglong
 
 * Network architecture (LSTM, vanilla RNN)  -- Yinglong
+
+* train
+
+* test
+
+* generate
+
+* visualize
