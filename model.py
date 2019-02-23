@@ -44,6 +44,6 @@ class GenericRNN(nn.Module):
         # do softmax on x to get the logistic prediction (classification problem)
         x = self.softmax(x)
         return x, state_n
-    def predict(self, x, state_0=0.):
+    def predict(self, x, state_0=None):
         # only return the sequential output, discard the hidden states
         return self(x)[0]
