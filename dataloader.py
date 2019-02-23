@@ -53,7 +53,12 @@ def obtain_map():
         one_hot[ind_dict[c]] = 1.
         return one_hot
     def one_hot_to_c(one_hot):
-        # input is tensor
+        """
+            input is tensor
+            one_hot to character
+            Note that since we are using max function here, the input can also be
+            logistics (probability)
+        """
         _, indices = one_hot.max(0)
         return c_list[indices[0].item()]
     return c_to_one_hot, one_hot_to_c
