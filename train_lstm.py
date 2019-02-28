@@ -9,7 +9,7 @@ import os
 from utility import *
 
 config = {'chunk_size':100, 'type_number':93, 'hidden':100, 
-          'learning_rate':0.001, 'early_stop':True, 'patience_threshold':3, 
+          'learning_rate':0.001, 'early_stop':True, 'patience_threshold':10, 
           'epoch_num':1, 'N':50, 'M':100, 'seed':1, 'model':'LSTM',
           'model_path':'model_weights'}
 
