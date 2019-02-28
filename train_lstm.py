@@ -101,43 +101,44 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
                 print('epoch {} minibatch {} train loss: {:.4f}'.format(
                     epoch, minibatch_ind, avg_minibatch_loss[-1]))
 #             print(loss.item())
-            # validation 
-            if minibatch_ind % M == 0:
-                with torch.no_grad():
-                    loss_val = 0
-                    count_val = 0
-                    for val in valid:
-                        count_val += 1
-                        if val[0].size()[0] != chunk_size:
-                            break
-                        predict_valid = torch.zeros(chunk_size, type_number)
-                        target_valid = torch.zeros(chunk_size, type_number)
-                        for ii in range(chunk_size):
-                            valid_batch = torch.zeros(1, 1, type_number)
-                            valid_batch[0] = val[0][ii]
-                            valid_batch = valid_batch.to(computing_device)
-                            target = val[1][ii]
-                            target = target.to(computing_device)
-                            predict = net.predict(valid_batch)
-                            predict_valid[ii] = predict
-                            target_valid[ii] = target
-                        loss_val += criterion(predict_valid, target_valid)
-                    loss_val /= count_val
-                    val_loss.append(loss_val.item())
-                    print('epoch {} minibatch {} val loss: {:.4f}'.format(
-                        epoch, minibatch_ind, val_loss[-1]))
-                    if loss_val < best_loss:
-                        print('best model updated')
-                        best_loss = loss_val
-                        best_net = copy.deepcopy(net)
-                save_state(best_net, optimizer, total_loss, avg_minibatch_loss, val_loss[1:], seed, model_path+'.pkl')
-                if early_stop:
-                    if loss_val > val_loss[-1]:
-                        stop_counter += 1
-                    else:
-                        stop_counter = 0
-                    if stop_counter >= patience_threshold:
-                        break
+        # validation 
+        #if minibatch_ind % M == 0:
+        with torch.no_grad():
+            loss_val = 0
+            count_val = 0
+            for val in valid:
+                count_val += 1
+                if val[0].size()[0] != chunk_size:
+                    break
+                predict_valid = torch.zeros(chunk_size, type_number)
+                target_valid = torch.zeros(chunk_size, type_number)
+                for ii in range(chunk_size):
+                    valid_batch = torch.zeros(1, 1, type_number)
+                    valid_batch[0] = val[0][ii]
+                    valid_batch = valid_batch.to(computing_device)
+                    target = val[1][ii]
+                    target = target.to(computing_device)
+                    predict = net.predict(valid_batch)
+                    predict_valid[ii] = predict
+                    target_valid[ii] = target
+                loss_val += criterion(predict_valid, target_valid)
+            loss_val /= count_val
+            val_loss.append(loss_val.item())
+            print('epoch {} val loss: {:.4f}'.format(
+                epoch, val_loss[-1]))
+            if loss_val < best_loss:
+                print('best model updated')
+                best_loss = loss_val
+                best_net = copy.deepcopy(net)
+        save_state(best_net, optimizer, total_loss, avg_minibatch_loss,
+                   val_loss[1:], seed, model_path+'.pkl')
+        if early_stop:
+            if loss_val > val_loss[-1]:
+                stop_counter += 1
+            else:
+                stop_counter = 0
+            if stop_counter >= patience_threshold:
+                break
 
 if __name__ == '__main__':
     train(**config)
