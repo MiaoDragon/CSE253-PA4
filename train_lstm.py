@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from dataloader import create_split_loaders
 from model import GenericRNN
 import torch
@@ -10,9 +10,14 @@ from utility import *
 
 config = {'chunk_size':100, 'type_number':93, 'hidden':100, 
           'learning_rate':0.001, 'early_stop':True, 'increase_limit':3, 
-          'epoch_num':1, 'N':50, 'M':100, 'seed':1, 'model':'LSTM', 'model_path':'model_weights'}
+          'epoch_num':1, 'N':50, 'M':100, 'seed':1, 'model':'LSTM',
+          'model_path':'model_weights'}
 
-def train(config):
+def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_rate=None,
+        early_stop=None, increase_limit=None, epoch_num=None, model_path=None, N=None, M=None,
+        model=None, **kwargs):
+    """Train a model.
+    """
     use_cuda = torch.cuda.is_available()
     if use_cuda:
         computing_device = torch.device("cuda")
@@ -23,32 +28,17 @@ def train(config):
         extras = False
         print("CUDA NOT supported")
     
-    seed = config['seed']
     torch.manual_seed(seed)
     
-    # the size of every chunk
-    chunk_size = config['chunk_size']
-    # number of types, it is a constant
-    type_number = config['type_number']
-    # number of features in hidden layer
-    hidden = config['hidden']
-    # learning rate
-    learning_rate = config['learning_rate']
-    # whether we use early stop
-    early_stop = config['early_stop']
-    # after validation loss increase how many times do we stop training
-    increase_limit = config['increase_limit']
-    # number of epoch
-    epoch_num = config['epoch_num']
     # receive train, validation, test data
     train, valid, test, c_to, one_to = create_split_loaders(chunk_size,extras)
     
     # construct network
-    net = GenericRNN(type_number, hidden, type_number, config['model'])
+    net = GenericRNN(type_number, hidden, type_number, model)
     # if model already exists, then load the previous one
-    if os.path.exists(config['model_path']+'.pkl'):
+    if os.path.exists(model_path+'.pkl'):
         print('loading previous model...')
-        load_net_state(net, config['model_path']+'.pkl')
+        load_net_state(net, model_path+'.pkl')
     net = net.to(computing_device)
     
     # use cross entropy loss
@@ -62,11 +52,11 @@ def train(config):
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
     # if model already exists, then load the previous optimizer state
     prev_total_loss, prev_avg_minibatch_loss, prev_val_loss = [], [], []
-    if os.path.exists(config['model_path']+'.pkl'):
+    if os.path.exists(model_path+'.pkl'):
         print('loading optimizer state...')
-        load_opt_state(optimizer, config['model_path']+'.pkl')
+        load_opt_state(optimizer, model_path+'.pkl')
         # notice when saving prev_val_loss, we ignored the first val_loss
-        prev_total_loss, prev_avg_minibatch_loss, prev_val_loss = load_loss(config['model_path']+'.pkl')
+        prev_total_loss, prev_avg_minibatch_loss, prev_val_loss = load_loss(model_path+'.pkl')
     
     total_loss = [] + prev_total_loss
     avg_minibatch_loss = [] + prev_avg_minibatch_loss
@@ -74,10 +64,6 @@ def train(config):
 
     last_valid = float('inf')
     best_net = -1
-    # after how many batches do we record the training loss
-    N = config['N']
-    # after how many batches do we examine whether validation loss increase
-    M = config['M']
     # store best loss
     best_loss = float('inf')
     increasement = 0
@@ -151,7 +137,7 @@ def train(config):
                         print('best model is updated')
                         best_loss = loss_val
                         best_net = copy.deepcopy(net)
-                save_state(best_net, optimizer, total_loss, avg_minibatch_loss, val_loss[1:], seed, config['model_path']+'.pkl')
+                save_state(best_net, optimizer, total_loss, avg_minibatch_loss, val_loss[1:], seed, model_path+'.pkl')
                 if early_stop:
                     if loss_val > last_valid:
                         increasement += 1
@@ -167,5 +153,6 @@ def train(config):
         epoch_cnt += 1
 
 
-train(config)
+if __name__ == '__main__':
+    train(**config)
 
