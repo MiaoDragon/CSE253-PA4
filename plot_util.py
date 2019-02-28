@@ -25,8 +25,8 @@ def _convert_to_xy(data):
 def plot(train_losses, val_losses, name=None):
     fig = plt.figure(figsize=(8,4), dpi=80)
     ax = fig.add_subplot(111)
-    title = 'loss over minibatches'
-    xlabel, ylabel = 'minibatches', 'loss'
+    title = 'loss over epochs'
+    xlabel, ylabel = 'epochs', 'loss'
     nbins = 10
 
     ax.set_title(title)
