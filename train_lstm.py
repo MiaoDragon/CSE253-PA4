@@ -93,11 +93,10 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
             total_loss.append(loss.item())
             average_loss += loss.item()
             if count % N == 0:
-                training_record.append(average_loss / N)
                 avg_minibatch_loss.append(average_loss / N)
                 average_loss = 0
                 print('training error after %d chunks:' % (count))
-                print(training_record)
+                print(avg_minibatch_loss)
             # validation
             if count % M == 0:
                 with torch.no_grad():
@@ -114,9 +113,8 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
                         loss_val += criterion(valid_predict, valid_target)
                     loss_val /= count_val
                     val_loss.append(loss_val.item())
-                    validation_record.append(loss_val.item())
                     print('validation error after %d chunks:' % (count))
-                    print(validation_record)
+                    print(val_loss)
                     if loss_val < best_loss:
                         print('best model is updated')
                         best_loss = loss_val
