@@ -102,7 +102,7 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
                     epoch, minibatch_ind, avg_minibatch_loss[-1]))
 #             print(loss.item())
             # validation 
-            if count % M == 0:
+            if minibatch_ind % M == 0:
                 with torch.no_grad():
                     loss_val = 0
                     count_val = 0
