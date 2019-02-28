@@ -9,13 +9,13 @@ import os
 from utility import *
 
 config = {'chunk_size':100, 'type_number':93, 'hidden':100, 
-          'learning_rate':0.001, 'early_stop':True, 'increase_limit':3, 
+          'learning_rate':0.001, 'early_stop':True, 'patience_threshold':3, 
           'epoch_num':1, 'N':50, 'M':100, 'seed':1, 'model':'LSTM',
           'model_path':'model_weights'}
 
 def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_rate=None,
-        early_stop=None, increase_limit=None, epoch_num=None, model_path=None, N=None, M=None,
-        model=None, **kwargs):
+        early_stop=None, patience_threshold=None, epoch_num=None, model_path=None, N=None,
+        M=None, model=None, **kwargs):
     """Train a model.
     """
     use_cuda = torch.cuda.is_available()
@@ -43,10 +43,6 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
     
     # use cross entropy loss
     criterion = nn.BCELoss()
-    # keep tracking of the traininig loss
-    training_record = []
-    # keep tracking of the validation loss
-    validation_record = []
     
     # Using Adam
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
@@ -60,19 +56,18 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
     
     total_loss = [] + prev_total_loss
     avg_minibatch_loss = [] + prev_avg_minibatch_loss
-    val_loss = [1000000000] + prev_val_loss #assume large error at the begining
+    val_loss = [float('inf')] + prev_val_loss #assume large error at the begining
 
-    last_valid = float('inf')
     best_net = -1
     # store best loss
     best_loss = float('inf')
-    increasement = 0
+    # number of consecutive epochs validation loss has increased - resets
+    # whenever the loss decreases again
+    stop_counter = 0
     epoch_cnt = 0
     for epoch in range(epoch_num):
-        count = 0
-        average_loss = 0
-        for minibatch in train:
-            count += 1
+        loss_accumulator = 0
+        for minibatch_ind, minibatch in enumerate(train):
             if minibatch[0].size()[0] != chunk_size:
                 break
             predict_all = torch.zeros(chunk_size, type_number)
@@ -99,13 +94,12 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
             loss.backward()
             optimizer.step()
             total_loss.append(loss.item())
-            average_loss += loss.item()
-            if count % N == 0:
-                training_record.append(average_loss / N)
-                avg_minibatch_loss.append(average_loss / N)
-                average_loss = 0
-                print('epoch ' + str(epoch_cnt) + ' minibatch ' + str(count) + ' keep tracking of training error:')
-                print(training_record[-1])
+            loss_accumulator += loss.item()
+            if minibatch_ind % N == 0:
+                avg_minibatch_loss.append(loss_accumulator / N)
+                loss_accumulator = 0
+                print('epoch {} minibatch {} train loss: {}'.format(
+                    epoch, minibatch_ind, avg_minibatch_loss[-1]))
 #             print(loss.item())
             # validation 
             if count % M == 0:
@@ -130,28 +124,20 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
                         loss_val += criterion(predict_valid, target_valid)
                     loss_val /= count_val
                     val_loss.append(loss_val.item())
-                    validation_record.append(loss_val.item())
-                    print('epoch ' + str(epoch_cnt) + ' minibatch ' + str(count) + ' keep tracking of validation error')
-                    print(validation_record[-1])
+                    print('epoch {} minibatch {} val loss: {}'.format(
+                        epoch, minibatch_ind, val_loss[-1]))
                     if loss_val < best_loss:
                         print('best model is updated')
                         best_loss = loss_val
                         best_net = copy.deepcopy(net)
                 save_state(best_net, optimizer, total_loss, avg_minibatch_loss, val_loss[1:], seed, model_path+'.pkl')
                 if early_stop:
-                    if loss_val > last_valid:
-                        increasement += 1
+                    if loss_val > val_loss[-1]:
+                        stop_counter += 1
                     else:
-                        increasement = 0
-                    last_valid = loss_val
-                    if increasement >= increase_limit:
+                        stop_counter = 0
+                    if stop_counter >= patience_threshold:
                         break
-        if early_stop:
-            if increasement >= increase_limit:
-                break
-
-        epoch_cnt += 1
-
 
 if __name__ == '__main__':
     train(**config)
