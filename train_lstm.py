@@ -8,8 +8,8 @@ import copy
 import os
 from utility import *
 
-config = {'chunk_size':100, 'type_number':93, 'hidden':100, 
-          'learning_rate':0.001, 'early_stop':True, 'patience_threshold':10, 
+config = {'chunk_size':100, 'type_number':93, 'hidden':100,
+          'learning_rate':0.001, 'early_stop':True, 'patience_threshold':10,
           'epoch_num':10, 'N':50, 'M':500, 'seed':1, 'model':'LSTM',
           'model_path':'model_weights'}
 
@@ -27,12 +27,12 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
         computing_device = torch.device("cpu")
         extras = False
         print("CUDA NOT supported")
-    
+
     torch.manual_seed(seed)
-    
+
     # receive train, validation, test data
     train, valid, test, c_to, one_to = create_split_loaders(chunk_size,extras)
-    
+
     # construct network
     net = GenericRNN(type_number, hidden, type_number, model)
     # if model already exists, then load the previous one
@@ -40,10 +40,10 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
         print('loading previous model...')
         load_net_state(net, model_path+'.pkl')
     net = net.to(computing_device)
-    
+
     # use cross entropy loss
     criterion = nn.BCELoss()
-    
+
     # Using Adam
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
     # if model already exists, then load the previous optimizer state
@@ -53,7 +53,7 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
         load_opt_state(optimizer, model_path+'.pkl')
         # notice when saving prev_val_loss, we ignored the first val_loss
         prev_total_loss, prev_avg_minibatch_loss, prev_val_loss = load_loss(model_path+'.pkl')
-    
+
     total_loss = [] + prev_total_loss
     avg_minibatch_loss = [] + prev_avg_minibatch_loss
     val_loss = [float('inf')] + prev_val_loss #assume large error at the begining
@@ -65,81 +65,75 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
     # whenever the loss decreases again
     stop_counter = 0
     epoch_cnt = 0
-    for epoch in range(epoch_num):
-        loss_accumulator = 0
-        for minibatch_ind, minibatch in enumerate(train, 1):
+    for epoch in range(epoch_start, epoch_num):
+
+        count = 0
+        average_loss = 0
+        state_0 = None
+        for minibatch in train:
+            count += 1
             if minibatch[0].size()[0] != chunk_size:
                 break
-            predict_all = torch.zeros(chunk_size, type_number)
-            target_all = torch.zeros(chunk_size, type_number)
             optimizer.zero_grad()
-            for ii in range(chunk_size):
-                train_batch = torch.zeros(1, 1, type_number)
-                train_batch[0] = minibatch[0][ii]
-                train_batch = train_batch.to(computing_device)
-                target = minibatch[1][ii]
-                target = target.to(computing_device)
-                if ii == 0:
-                    predict = net.predict(train_batch)
-                else:
-                    # teacher forcing
-                    teacher = torch.ones(1, 1, type_number)
-                    teacher[0] = minibatch[1][ii - 1]
-                    teacher = teacher.to(computing_device)
-                    predict = net.predict(train_batch, teacher)
-                predict_all[ii] = predict
-                target_all[ii] = target
-            # calculate loss
-            loss = criterion(predict_all, target_all)
+            train_batch = minibatch[0]
+            target_batch = minibatch[1]
+            train_batch = train_batch.to(computing_device)
+            target_batch = target_batch.to(computing_device)
+            predict_batch, state_0 = net(train_batch, state_0)
+            if isinstance(state_0, tuple):
+                state_0 = list(state_0)
+                for i in range(len(state_0)):
+                    state_0[i] = state_0[i].detach()
+                state_0 = tuple(state_0)
+            else:
+                state_0 = state_0.detach()
+            loss = criterion(predict_batch, target_batch)
             loss.backward()
             optimizer.step()
             total_loss.append(loss.item())
-            loss_accumulator += loss.item()
-            if minibatch_ind % N == 0:
-                avg_minibatch_loss.append(loss_accumulator / N)
-                loss_accumulator = 0
-                print('epoch {} minibatch {} train loss: {:.4f}'.format(
-                    epoch, minibatch_ind, avg_minibatch_loss[-1]))
-#             print(loss.item())
-        # validation 
-        #if minibatch_ind % M == 0:
-        with torch.no_grad():
-            loss_val = 0
-            count_val = 0
-            for val in valid:
-                count_val += 1
-                if val[0].size()[0] != chunk_size:
-                    break
-                predict_valid = torch.zeros(chunk_size, type_number)
-                target_valid = torch.zeros(chunk_size, type_number)
-                for ii in range(chunk_size):
-                    valid_batch = torch.zeros(1, 1, type_number)
-                    valid_batch[0] = val[0][ii]
-                    valid_batch = valid_batch.to(computing_device)
-                    target = val[1][ii]
-                    target = target.to(computing_device)
-                    predict = net.predict(valid_batch)
-                    predict_valid[ii] = predict
-                    target_valid[ii] = target
-                loss_val += criterion(predict_valid, target_valid)
-            loss_val /= count_val
-            val_loss.append(loss_val.item())
-            print('epoch {} val loss: {:.4f}'.format(
-                epoch, val_loss[-1]))
-            if loss_val < best_loss:
-                print('best model updated')
-                best_loss = loss_val
-                best_net = copy.deepcopy(net)
-        save_state(best_net, optimizer, total_loss, avg_minibatch_loss,
-                   val_loss[1:], seed, model_path+'.pkl')
+            average_loss += loss.item()
+            if count % N == 0:
+                training_record.append(average_loss / N)
+                avg_minibatch_loss.append(average_loss / N)
+                average_loss = 0
+                print('training error after %d chunks:' % (count))
+                print(training_record)
+            # validation
+            if count % M == 0:
+                with torch.no_grad():
+                    loss_val = 0
+                    count_val = 0
+                    state_0 = None
+                    for val in valid:
+                        count_val += 1
+                        if val[0].size()[0] != chunk_size:
+                            break
+                        valid_batch = val[0].to(computing_device)
+                        valid_target = val[1].to(computing_device)
+                        valid_predict, state_0 = net(valid_batch, state_0)
+                        loss_val += criterion(valid_predict, valid_target)
+                    loss_val /= count_val
+                    val_loss.append(loss_val.item())
+                    validation_record.append(loss_val.item())
+                    print('validation error after %d chunks:' % (count))
+                    print(validation_record)
+                    if loss_val < best_loss:
+                        print('best model is updated')
+                        best_loss = loss_val
+                        best_net = copy.deepcopy(net)
+                save_state(best_net, optimizer, total_loss, avg_minibatch_loss, val_loss[1:], \
+                           seed, config['model_path']+'.pkl')
+                if early_stop:
+                    if loss_val > last_valid:
+                        increasement += 1
+                    else:
+                        increasement = 0
+                    last_valid = loss_val
+                    if increasement >= increase_limit:
+                        break
         if early_stop:
-            if loss_val > val_loss[-1]:
-                stop_counter += 1
-            else:
-                stop_counter = 0
-            if stop_counter >= patience_threshold:
+            if increasement >= increase_limit:
                 break
 
 if __name__ == '__main__':
     train(**config)
-
