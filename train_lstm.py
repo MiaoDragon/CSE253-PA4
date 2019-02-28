@@ -10,18 +10,18 @@ from utility import *
 
 config = {'chunk_size':100, 'type_number':93, 'hidden':100,
           'learning_rate':0.001, 'early_stop':True, 'patience_threshold':10,
-          'epoch_num':10, 'N':50, 'M':500, 'seed':1, 'model':'LSTM',
-          'model_path':'model_weights'}
+          'epoch_num':10, 'N':1000, 'M':1000, 'seed':1, 'model':'LSTM',
+          'model_path':'model_weights', 'num_workers': 8, 'pin_memory': True}
 
 def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_rate=None,
         early_stop=None, patience_threshold=None, epoch_num=None, model_path=None, N=None,
-        M=None, model=None, **kwargs):
+        M=None, model=None, num_workers=8, pin_memory=True, **kwargs):
     """Train a model.
     """
     use_cuda = torch.cuda.is_available()
     if use_cuda:
         computing_device = torch.device("cuda")
-        extras = {"num_workers": 1, "pin_memory": True}
+        extras = {"num_workers": num_workers, "pin_memory": pin_memory}
         print("CUDA is supported")
     else: # Otherwise, train on the CPU
         computing_device = torch.device("cpu")
@@ -42,8 +42,11 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
     net = net.to(computing_device)
 
     # use cross entropy loss
-    criterion = nn.BCELoss()
-
+    def one_hot_CE(pred, target):
+        # convert target from one hot to LongTensor, then apply CE
+        target = target.argmax(dim=1)
+        return nn.CrossEntropyLoss()(pred, target)
+    criterion = one_hot_CE
     # Using Adam
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
     # if model already exists, then load the previous optimizer state
