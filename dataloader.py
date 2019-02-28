@@ -41,7 +41,7 @@ def obtain_map():
     from training dataset
     """
     data = []
-    with open('../pa4Data/train.txt', 'r') as file:
+    with open('pa4Data/train.txt', 'r') as file:
         for line in file:
             data += line
     c_list = list(set(data))
@@ -67,11 +67,11 @@ def create_split_loaders(chunk_size, extras={}):
     # obtain maps that map from characters to one-hot-encoding, and backward
     c_to_one_hot, one_hot_to_c = obtain_map()
     # create dataset object for train, val, test dataset
-    train_dataset = MusicDataset(filename='../pa4Data/train.txt', \
+    train_dataset = MusicDataset(filename='pa4Data/train.txt', \
                                  c_to_one_hot=c_to_one_hot, one_hot_to_c=one_hot_to_c)
-    val_dataset = MusicDataset(filename='../pa4Data/val.txt', \
+    val_dataset = MusicDataset(filename='pa4Data/val.txt', \
                                  c_to_one_hot=c_to_one_hot, one_hot_to_c=one_hot_to_c)
-    test_dataset = MusicDataset(filename='../pa4Data/test.txt', \
+    test_dataset = MusicDataset(filename='pa4Data/test.txt', \
                                  c_to_one_hot=c_to_one_hot, one_hot_to_c=one_hot_to_c)
     num_workers = 0
     pin_memory = False
