@@ -81,6 +81,7 @@ def train(config):
     # store best loss
     best_loss = float('inf')
     increasement = 0
+    epoch_cnt = 0
     for epoch in range(epoch_num):
         count = 0
         average_loss = 0
@@ -117,8 +118,8 @@ def train(config):
                 training_record.append(average_loss / N)
                 avg_minibatch_loss.append(average_loss / N)
                 average_loss = 0
-                print('keep tracking of training error:')
-                print(training_record)
+                print('epoch ' + str(epoch_cnt) + ' minibatch ' + str(count) + ' keep tracking of training error:')
+                print(training_record[-1])
 #             print(loss.item())
             # validation 
             if count % M == 0:
@@ -144,8 +145,8 @@ def train(config):
                     loss_val /= count_val
                     val_loss.append(loss_val.item())
                     validation_record.append(loss_val.item())
-                    print('keep tracking of validation error')
-                    print(validation_record)
+                    print('epoch ' + str(epoch_cnt) + ' minibatch ' + str(count) + ' keep tracking of validation error')
+                    print(validation_record[-1])
                     if loss_val < best_loss:
                         print('best model is updated')
                         best_loss = loss_val
@@ -162,6 +163,8 @@ def train(config):
         if early_stop:
             if increasement >= increase_limit:
                 break
+
+        epoch_cnt += 1
 
 
 train(config)
