@@ -45,6 +45,7 @@ def obtain_map():
         for line in file:
             data += line
     c_list = list(set(data))
+    c_list.sort()
     ind_dict = {}
     for i in range(len(c_list)):
         ind_dict[c_list[i]] = i
