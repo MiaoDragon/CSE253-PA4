@@ -10,7 +10,7 @@ from utility import *
 
 config = {'chunk_size':100, 'type_number':93, 'hidden':100, 
           'learning_rate':0.001, 'early_stop':True, 'patience_threshold':10, 
-          'epoch_num':10, 'N':50, 'M':100, 'seed':1, 'model':'LSTM',
+          'epoch_num':10, 'N':50, 'M':500, 'seed':1, 'model':'LSTM',
           'model_path':'model_weights'}
 
 def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_rate=None,
@@ -98,7 +98,7 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
             if minibatch_ind % N == 0:
                 avg_minibatch_loss.append(loss_accumulator / N)
                 loss_accumulator = 0
-                print('epoch {} minibatch {} train loss: {}'.format(
+                print('epoch {} minibatch {} train loss: {:.4f}'.format(
                     epoch, minibatch_ind, avg_minibatch_loss[-1]))
 #             print(loss.item())
             # validation 
@@ -124,10 +124,10 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
                         loss_val += criterion(predict_valid, target_valid)
                     loss_val /= count_val
                     val_loss.append(loss_val.item())
-                    print('epoch {} minibatch {} val loss: {}'.format(
+                    print('epoch {} minibatch {} val loss: {:.4f}'.format(
                         epoch, minibatch_ind, val_loss[-1]))
                     if loss_val < best_loss:
-                        print('best model is updated')
+                        print('best model updated')
                         best_loss = loss_val
                         best_net = copy.deepcopy(net)
                 save_state(best_net, optimizer, total_loss, avg_minibatch_loss, val_loss[1:], seed, model_path+'.pkl')
