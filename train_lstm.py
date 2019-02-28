@@ -66,7 +66,6 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
     stop_counter = 0
     epoch_cnt = 0
     for epoch in range(epoch_num):
-
         average_loss = 0
         state_0 = None
         for minibatch_ind, minibatch in enumerate(train, 1):
@@ -93,20 +92,20 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
             if minibatch_ind % N == 0:
                 avg_minibatch_loss.append(average_loss / N)
                 average_loss = 0
-                print('epoch %d minibatch %d train loss: %f' % (epoch, minibatch_ind, avg_minibatch_loss[-1]))
+                print('epoch %d minibatch %d average train loss: %f' % (epoch, minibatch_ind, avg_minibatch_loss[-1]))
             # validation
             if minibatch_ind % M == 0:
                 with torch.no_grad():
                     loss_val = 0
                     count_val = 0
-                    state_0 = None
+                    val_state_0 = None
                     for val in valid:
                         count_val += 1
                         if val[0].size()[0] != chunk_size:
                             break
                         valid_batch = val[0].to(computing_device)
                         valid_target = val[1].to(computing_device)
-                        valid_predict, state_0 = net(valid_batch, state_0)
+                        valid_predict, val_state_0 = net(valid_batch, val_state_0)
                         loss_val += criterion(valid_predict, valid_target)
                     loss_val /= count_val
                     val_loss.append(loss_val.item())
