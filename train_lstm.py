@@ -10,7 +10,7 @@ from utility import *
 
 config = {'chunk_size':100, 'type_number':93, 'hidden':100, 
           'learning_rate':0.001, 'early_stop':True, 'patience_threshold':10, 
-          'epoch_num':1, 'N':50, 'M':100, 'seed':1, 'model':'LSTM',
+          'epoch_num':10, 'N':50, 'M':100, 'seed':1, 'model':'LSTM',
           'model_path':'model_weights'}
 
 def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_rate=None,
@@ -67,7 +67,7 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
     epoch_cnt = 0
     for epoch in range(epoch_num):
         loss_accumulator = 0
-        for minibatch_ind, minibatch in enumerate(train):
+        for minibatch_ind, minibatch in enumerate(train, 1):
             if minibatch[0].size()[0] != chunk_size:
                 break
             predict_all = torch.zeros(chunk_size, type_number)
