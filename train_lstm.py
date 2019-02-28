@@ -65,7 +65,7 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
     # whenever the loss decreases again
     stop_counter = 0
     epoch_cnt = 0
-    for epoch in range(epoch_start, epoch_num):
+    for epoch in range(epoch_num):
 
         count = 0
         average_loss = 0
