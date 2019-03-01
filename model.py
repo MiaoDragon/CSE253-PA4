@@ -42,7 +42,7 @@ class GenericRNN(nn.Module):
         # and do linear layer
         x = self.fc(x.squeeze(1))
         # do softmax on x to get the logistic prediction (classification problem)
-        x = self.softmax(x)
+        # x = self.softmax(x)
         return x, state_n
     def predict(self, x, state_0=None):
         # only return the sequential output, discard the hidden states
