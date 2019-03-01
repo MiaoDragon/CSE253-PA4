@@ -4,6 +4,9 @@
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
+from collections import Counter
+
+
 class MusicDataset(Dataset):
     def __init__(self, filename, c_to_one_hot, one_hot_to_c):
         """
@@ -44,8 +47,18 @@ def obtain_map():
     with open('pa4Data/train.txt', 'r') as file:
         for line in file:
             data += line
+
+    # debug
+    # ctr = Counter(data[:30000])
+    # print(ctr)
+    # print(ctr['#'])
+    # print(ctr['&'])
+    # print(ctr["'"])
+    # print(len(ctr))
+
     c_list = list(set(data))
     c_list.sort()
+    # print(c_list)
     ind_dict = {}
     for i in range(len(c_list)):
         ind_dict[c_list[i]] = i
@@ -60,8 +73,14 @@ def obtain_map():
             Note that since we are using max function here, the input can also be
             logistics (probability)
         """
-        _, indices = one_hot.max(0)
-        return c_list[indices[0].item()]
+        _, indices = one_hot.max(1)
+        # print(one_hot.shape)
+        # print(indices.shape)
+        s = ''
+        for ind in indices:
+            # print(ind.item())
+            s += c_list[ind.item()]
+        return s#''.join(c_list[ind] for ind in indices)
     return c_to_one_hot, one_hot_to_c
 
 def create_split_loaders(chunk_size, extras={}):
