@@ -138,7 +138,7 @@ def train(seed=None, chunk_size=None, type_number=None, hidden=None, learning_ra
                 best_loss = loss_val
                 best_net = copy.deepcopy(net)
         save_state(best_net, optimizer, total_loss, avg_minibatch_loss, val_loss[1:], \
-                   seed, config['model_path']+'.pkl')
+                   seed, model_path+'.pkl')
         if early_stop:
             if loss_val > val_loss[-1]:
                 stop_counter += 1

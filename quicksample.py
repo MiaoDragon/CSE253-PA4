@@ -50,7 +50,6 @@ def sample(seed=None, chunk_size=None, type_number=None, hidden=None, learning_r
     c_list = list(set(data))
     c_list.sort()
     c_list = np.array(c_list)
-    print(c_list)
 
     with torch.no_grad():
         out_str, h = '<', None
