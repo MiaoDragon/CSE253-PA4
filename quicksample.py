@@ -51,11 +51,20 @@ def sample(seed=None, chunk_size=None, type_number=None, hidden=None, learning_r
     c_list.sort()
     c_list = np.array(c_list)
 
+    def forward(c, h):
+        return net.forward(c_to(c).view(1, -1).to(computing_device), h)
+
     with torch.no_grad():
-        out_str, h = '<', None
-        for ii in range(chunk_size):
-            out, h = net.forward(
-                c_to(out_str[-1]).view(1, -1).to(computing_device), h)
+        start_str = '<start>\n'
+        out_str, h = start_str, None
+        for ii in range(200):
+            # if the net prediction will still be inside start_str, we want to
+            # ignore the output; we are effectively just priming the net with a
+            # good hidden initialization
+            if ii < len(out_str) - 1:
+                out, h = forward(start_str[ii], h)
+                continue
+            out, h = forward(out_str[-1], h)
             p = out.cpu()
             p /= T # Apply temperature
             p = F.softmax(p, dim=1)
