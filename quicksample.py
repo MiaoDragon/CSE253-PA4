@@ -4,6 +4,7 @@ from model import GenericRNN
 import torch
 
 import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 
 import copy
@@ -13,11 +14,11 @@ from utility import *
 config = {'chunk_size':100, 'type_number':93, 'hidden':100, 
           'learning_rate':0.001, 'early_stop':True, 'patience_threshold':10, 
           'epoch_num':10, 'N':50, 'M':500, 'seed':1, 'model':'LSTM',
-          'model_path':'model_weights'}
+          'model_path':'model_weights', 'T':1}
 
 def sample(seed=None, chunk_size=None, type_number=None, hidden=None, learning_rate=None,
         early_stop=None, patience_threshold=None, epoch_num=None, model_path=None, N=None,
-        M=None, model=None, **kwargs):
+         M=None, model=None, T=1, **kwargs):
     use_cuda = torch.cuda.is_available()
     if use_cuda:
         computing_device = torch.device("cuda")
@@ -56,7 +57,10 @@ def sample(seed=None, chunk_size=None, type_number=None, hidden=None, learning_r
         for ii in range(chunk_size):
             out, h = net.forward(
                 c_to(out_str[-1]).view(1, -1).to(computing_device), h)
-            p = np.array(out.cpu()).flatten()
+            p = out.cpu()
+            p /= T # Apply temperature
+            p = F.softmax(p, dim=1)
+            p = np.array(p).flatten()
             p /= sum(p)
             sampled_out = np.random.choice(c_list, p=p)
             out_str += sampled_out

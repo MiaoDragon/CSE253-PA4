@@ -19,7 +19,7 @@ class GenericRNN(nn.Module):
                                     batch_first=False, dropout=0, bidirectional=False)
         # connect the hidden layer of lstm to fc layer
         self.fc = nn.Linear(hidden_dim, out_dim)
-        self.softmax = nn.Softmax(dim=1)
+
     def forward(self, x, state_0=None):
         """
             -- input:
@@ -41,9 +41,8 @@ class GenericRNN(nn.Module):
         # convert back to shape (chunk_size, out_size)
         # and do linear layer
         x = self.fc(x.squeeze(1))
-        # do softmax on x to get the logistic prediction (classification problem)
-        # x = self.softmax(x)
         return x, state_n
+
     def predict(self, x, state_0=None):
         # only return the sequential output, discard the hidden states
         return self(x)[0]
