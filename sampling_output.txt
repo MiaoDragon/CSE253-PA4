@@ -1,0 +1,125 @@
+CUDA is supported
+loading previous model...
+====== T = 0.5, seed = 1 ======
+<start>
+X:120
+T:Kill of the Ruglet
+R:polka
+Z:id:hn-polka-70
+M:2/4
+L:1/8
+K:D
+dA/B/ cA|BA FA|GB/d/ ed|dB AF|1 A2 AB:|2 d2 dA||
+|:A2 A>B|cB AB|c/B/A/G/ AA|BA E>/ c/B/|AF FE|EF AB|AB cB|AB B/c/d/B/|AF GA||
+====== T = 0.5, seed = 2 ======
+<start>
+X:72
+T:There Gien Reeame
+T:Bill the Tiodong The Tune's Danny
+T:La Lay's Favoun Chamh\'ine
+T:Sleving's Theedy's
+T:Ther Ling Roche's
+R:polka
+D:De Danann: The Broots of the Lig la crois
+Z:id:hn-po
+====== T = 0.7, seed = 1 ======
+<start>
+X: 20
+T:John of Ui Stubllia
+R:polka
+H:Also played "Hage Pell a Dancersion of and in Cherpley aldor
+Z:id:hn-polka-70
+M:2/4
+L:1/8
+K:D
+D2 AG|FG AB|AB cB|AG FD|DE/F/ GE|
+A/B/A/G/ FE|DE DF|Ad dB|A2
+====== T = 0.7, seed = 2 ======
+<start>
+X:62
+T:Kill Delly ofle's
+R:polka
+H:Also played in A, #6
+D:Wolka #21
+Z:id:hn-polka-73
+M:2/4
+L:1/8
+K:D
+AG/F/ GE|DF AF|ED ED|ED D/F/F/D/|EE G2|D2 DE|G2 B/:|c A B|AG FD|GB/d/ ec|dB cB|AB cB|AD Ad|e
+====== T = 1, seed = 1 ======
+<start>
+X: 3/4
+T:Faray Leve tre hoi Coleter
+T:Antres Polka
+R:polka
+Z:id:hn-polka-74
+M:2/4
+L:1/8
+K:Amix
+Ad (3cdg|ed ed|B2 c2|dg B/A/B|cB AB|ed eB|ce e2|A/B/A A2|FA FA|ef fd|B (3B/A|1 BA A2:|2 A2 AB||
+<e
+====== T = 1, seed = 2 ======
+<start>
+X:62
+T:Ladgh O'Lignai
+R:polka
+H:See also #92
+D:Paur McLLO sopeo", #19, #26, #17, #26
+M:4/4
+K:D
+DF|:GE GEE|Bd dB|AF GE|ED ED|1 AF C2:|2 DEE D2D|B>BG AG|(3BAB GB|e2 ce|d2 dA|
+B2 GB|gB dc|BA A2|
+b
+====== T = 2, seed = 1 ======
+<start>
+X:
+9
+I:Wame, p'eel Grudist #1\
+Drfomgr
+Zstarhit pa-G4
+Q:D/8Q"BbI chevlu"
+_B/d/ed|cK:Bmaxde
+zDGA fd cA|dAGF dG~A2|\
+dere (1 BdGG|(3Eed f>g:|[2 (3)(BcA (e^G)j:|vg:Var (175)
+|:AEGF +EJ/_3/U/F/| (G
+====== T = 2, seed = 2 ======
+<start>
+X:63
+T:Maer. O'Suis#5'U <e.
+C:Larkgas Bry.m, Nfoove Gol HWzynkg, ThEw[M:6/8-D
+Z:i2:Limelwab(ca3,0904)
+Z:id:hn-polka-70
+M:4/4
+L421/14
+K:Dmu5
+L:d3>an
+BU"12D "AMc3e/d/e|G3/A/G& EGd|Ef Lef/g/|
+"g/b
+====== T = argmax, seed = 1 ======
+<start>
+X:77
+T:James Morneal Theeel Polka
+R:polka
+Z:id:hn-polka-74
+M:2/4
+L:1/8
+K:D
+A>B cB|AF EF|EF AB|AF FE|EF AB|AF AB|AF EF|EF AB|AB AB|AF EF|A>B AG|FA AF|A2 AB|A2 A2:|
+<end>
+<start>
+X:77
+T:Jam Mcyon
+====== T = argmax, seed = 2 ======
+<start>
+X:77
+T:James Morneal Theeel Polka
+R:polka
+Z:id:hn-polka-74
+M:2/4
+L:1/8
+K:D
+A>B cB|AF EF|EF AB|AF FE|EF AB|AF AB|AF EF|EF AB|AB AB|AF EF|A>B AG|FA AF|A2 AB|A2 A2:|
+<end>
+<start>
+X:77
+T:Jam Mcyon

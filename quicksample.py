@@ -9,6 +9,8 @@ import numpy as np
 
 import copy
 import os
+import sys
+
 from utility import *
 
 config = {'chunk_size':100, 'type_number':93, 'hidden':100, 
@@ -16,15 +18,19 @@ config = {'chunk_size':100, 'type_number':93, 'hidden':100,
           'epoch_num':10, 'N':50, 'M':500, 'seed':1, 'model':'LSTM',
           'model_path':'model_weights', 'T':1}
 
-def sample(seed=None, chunk_size=None, type_number=None, hidden=None, learning_rate=None,
-        early_stop=None, patience_threshold=None, epoch_num=None, model_path=None, N=None,
+def init(seed=None, chunk_size=None, type_number=None, hidden=None, learning_rate=None,
+         early_stop=None, patience_threshold=None, epoch_num=None, model_path=None, N=None,
          M=None, model=None, T=1, **kwargs):
+    global net
+    global c_list
+    global forward
+
     use_cuda = torch.cuda.is_available()
     if use_cuda:
         computing_device = torch.device("cuda")
         extras = {"num_workers": 1, "pin_memory": True}
         print("CUDA is supported")
-    else: # Otherwise, train on the CPU
+    else:
         computing_device = torch.device("cpu")
         extras = False
         print("CUDA NOT supported")
@@ -54,6 +60,12 @@ def sample(seed=None, chunk_size=None, type_number=None, hidden=None, learning_r
     def forward(c, h):
         return net.forward(c_to(c).view(1, -1).to(computing_device), h)
 
+def sample(seed=None, chunk_size=None, type_number=None, hidden=None, learning_rate=None,
+           early_stop=None, patience_threshold=None, epoch_num=None, model_path=None, N=None,
+           M=None, model=None, T=1, **kwargs):
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    print('====== T = {}, seed = {} ======'.format(T, seed))
     with torch.no_grad():
         start_str = '<start>\n'
         out_str, h = start_str, None
@@ -74,9 +86,13 @@ def sample(seed=None, chunk_size=None, type_number=None, hidden=None, learning_r
                 sampled_out = np.random.choice(c_list, p=p)
             else:
                 p = p.argmax()
-                sampled_out = c_list[patience_threshold]
+                sampled_out = c_list[p]
             out_str += sampled_out
         print(out_str)
 
 if __name__ == '__main__':
-    sample(**config)
+    init(**config)
+    for T in [0.5, 0.7, 1, 2, 'argmax']:
+        for seed in [1, 2]:
+            config['T'], config['seed'] = T, seed
+            sample(**config)
