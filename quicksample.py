@@ -66,11 +66,15 @@ def sample(seed=None, chunk_size=None, type_number=None, hidden=None, learning_r
                 continue
             out, h = forward(out_str[-1], h)
             p = out.cpu()
-            p /= T # Apply temperature
-            p = F.softmax(p, dim=1)
-            p = np.array(p).flatten()
-            p /= sum(p)
-            sampled_out = np.random.choice(c_list, p=p)
+            if T != 'argmax':
+                p /= T # Apply temperature
+                p = F.softmax(p, dim=1)
+                p = np.array(p).flatten()
+                p /= sum(p)
+                sampled_out = np.random.choice(c_list, p=p)
+            else:
+                p = p.argmax()
+                sampled_out = c_list[patience_threshold]
             out_str += sampled_out
         print(out_str)
 
